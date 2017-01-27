@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Lista de Productos</title>
+	<!--Bootstrap css-->
+	<link rel="stylesheet" type="text/css" href="node_modules\bootstrap\dist\css\bootstrap.min.css">
+
+	<!--JQuery-->
+	<script type="text/javascript" src="node_modules\jquery\dist\jquery.min.js"></script>
+
+	<!--Bootstrap.js-->
+	<script type="text/javascript" src="node_modules\bootstrap\dist\js\bootstrap.min.js"></script>
+	<style>
+		#red:hover{
+			color: red;
+		}
+		#yellow:hover{
+			color: yellow;
+		}
+		td i{
+			font-size: 1.5em;
+			transition: color .5s;
+			cursor: pointer;
+			width: 36px;
+		}
+		div.scroll {
+		    background-color: grey;
+		    width: 1142px;
+		    height: 550px;
+		    overflow: scroll;
+		    margin: auto;
+    
+		}
+	</style>
+</head>
+<body>
+	<div id="main" class="container">
+		<div class="panel panel-default">
+			<div class="panel-heading"></div>
+			<div class="panel-body">
+				<form id="frmProducto" action="">
+				<input name="IDProducto" id='IDProducto' type="hidden">
+				<div class="form-group col-md-6">
+					<label for='nombre' class="control-label">Producto:</label>
+					<input name="nombre" id='nombre' type="text" class="form-control">
+				</div>
+				<div class="form-group col-md-6">
+					<label for='precio' class="control-label">Precio: </label>
+					<input name="precio" id="precio" type="text" class="form-control">
+				</div>
+				<div class="form-group col-md-2">
+				<button class="btn btn-primary" id="btnAgregar">Agregar producto Nuevo</button>
+				</div>
+				<div class="form-group col-md-2">
+				<button class="btn btn-danger" id="btnEditar">Editar producto</button>
+				</div>
+			</form>
+			</div>
+		</div>
+		<div class="scroll">	
+		<table class="table table-stripped" id="tblProductos">
+			<tr id="cabecera">
+				<th>ID</th>
+				<th>Nombre</th>
+				<th>Precio</th>
+			</tr>
+		</table>
+		</div>
+	</div>
+</body>
+<script type="text/javascript">
+	tomarDatosDeServidor();
+	$('#btnEditar').hide();
+	
+	$('#btnEditar').click(function() {
+		//Prevenimos que se envien los datos y haga refresh
+		//Serializar la forma con los datos del producto editado
+		//var productoEditado = {id:$('#IDProducto'),nombre:$('#nombre').val(),precio:$('#precio').val()};
+		$.ajax({
+			url:'http://localhost:55537/producto/editarProducto',
+			type:'POST',
+			dataType:'JSON', //El formato de lo que recibes
+			//contentType:'application/Json; charset="UTF-8"',
+			data:{prodictoID:$('#IDProducto').val(),nombre:$('#nombre').val(),
+			precio:$('#precio').val()},
+			success: function(result,status,xhr){
+				tomarDatosDeServidor();
+				$('#btnEditar').hide();
+				$('#btnAgregar').show();
+
+			},
+			error: function(xhr,status,error){
+				alert('verifica tu conección con el sevidor o consulta tu Administrador');
+			},
+		});
+	});
+	function editar(id) {
+		$.ajax({
+				url:'http://localhost:55537/producto/editarProducto',
+				type:'GET',
+				dataType:'JSON',
+				//contentType:'application/Json; charset="UTF-8"',
+				data:{id:id},
+			success: function(result,status,xhr){
+				//alert('si llego '+result.nombre)
+				$('#IDProducto').val(result.id)
+				$('#nombre').val(result.nombre);
+				$('#precio').val(result.precio);
+				$('#btnEditar').show();
+				$('#btnAgregar').hide();
+
+
+				//tomarDatosDeServidor();
+			},//success
+			error: function(xhr,status,error){
+				alert('verifica tu conección con el sevidor o consulta tu Administrador');
+			}//error
+			});//cierre de ajax dentro de datos
+
+	}
+	function borrar(id) {
+			///alert('verifica'+id)
+			var confirmacion= confirm('Seguro de eliminar a este registro?');
+			if (confirmacion) {
+			$.ajax({
+				url:'http://localhost:55537/producto/eliminarProducto',
+				type:'POST',
+				dataType:'JSON',
+				//contentType:'application/Json; charset="UTF-8"',
+				data:{id:id},
+			success: function(result,status,xhr){
+				tomarDatosDeServidor();
+			},//success
+			error: function(xhr,status,error){
+				alert('verifica tu conección con el sevidor o consulta tu Administrador');
+			}//error
+			});//cierre de ajax dentro de datos
+			}else {
+				
+			}
+		}
+
+
+	$('#btnAgregar').click(function (/*e*/) {
+		//Prevenimos que se envien los datos y haga refresh
+		//e.preventDefault();
+		//Serializar la forma con los datos del nuevo producto
+		//var nuevoProducto = {nombre:$('#nombre').val(),precio:$('#precio').val()};/*$(this).serialize();*/
+		//Se declara llamada asincrona para crear producto
+		$.ajax({
+			url:'http://localhost:55537/producto/crearProducto',
+			type:'POST',
+			dataType:'JSON', //El formato de lo que recibes
+			//contentType:'application/Json; charset="UTF-8"',
+			data: {nombre:$('#nombre').val(),precio:$('#precio').val()},/*JSON.stringify(nuevoProducto)*/ 
+			success: function(result,status,xhr){
+				tomarDatosDeServidor();
+			},
+			error: function(xhr,status,error){
+				alert('verifica tu conección con el sevidor o consulta tu Administrador');
+			}
+		});
+	});
+	function tomarDatosDeServidor(){
+		//Limpiar la tabla
+		$('#tblProductos >').children().not('#cabecera').remove();
+		//Datos dummy
+		$.ajax({
+			url: 'http://localhost:55537/producto/getJsonList',
+			type: 'GET',
+			dataType:'JSON',
+			success: function(result,status,xhr){
+				//Si la conexion se realizo
+				productos = result;
+				//Se rellena la tabla con los productos
+				for (var i = 0; i < productos.length; i++) {
+
+					insertarRenglon(productos[i]);
+
+				}
+				$('#tblProductos tr td i').click(function(){
+					//alert('QUIERES BORAR ALGO!, PECADO!');
+				});
+			},
+			error: function(xhr,status,error){
+				alert('verifica tu conección con el sevidor o consulta tu Administrador');
+			},
+		});
+	}
+	function insertarRenglon(producto){
+
+		var nuevotr = $('<tr>')
+			.append($('<td>').html(producto.prodictoID))
+			.append($('<td>').html(producto.nombre))
+			.append($('<td>').html('$'+producto.precio))
+			.append($('<td>').html('<i id="red" onclick="borrar('+producto.prodictoID+')"class="glyphicon glyphicon-remove"></i>'))
+			.append($('<td>').html('<i id="yellow" onclick="editar('+producto.prodictoID+')"class="glyphicon glyphicon-pencil"></i>'));
+		$('#tblProductos').append(nuevotr);
+	}
+</script>
+</html>

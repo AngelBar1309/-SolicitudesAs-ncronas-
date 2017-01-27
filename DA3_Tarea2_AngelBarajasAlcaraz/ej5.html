@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Republica Mexicana</title>
+	<link rel="stylesheet" type="text/css" href="node_modules\bootstrap\dist\css\bootstrap.min.css">
+	<!--JQuery-->
+	<script type="text/javascript" src="node_modules\jquery\dist\jquery.min.js"></script>
+	<!--Bootstrap.js-->
+	<script type="text/javascript" src="node_modules\bootstrap\dist\js\bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container">
+<div class="form-inline">
+
+ <div class="form-group">
+<label for="Estados">Estados de la republica</label>
+<select name="Estados" class="form-control" id="SEstados">
+</select>
+</div>
+</div>
+<div class="form-inline">
+<br/>
+ <div class="form-group">
+<label for="Municipios">Municipios</label>
+<select name="Municipios" class="form-control" id="SMunicipios">
+  
+</select>
+</div>
+</div>
+</div>
+	<script type="text/javascript">
+	$.ajax({
+		url: 'http://localhost:55537/Estados/',
+		type: 'GET',
+		dataType: 'json',
+		success: function(result,status,xhr){
+			for (var i = 0; i < result.length; i++) {
+				insertarEstados(result[i]);
+			}
+		},
+		error: function(xhr,status,error){
+			alert('revisa tu coneccion');
+		}
+	});
+	$('#SEstados').change(function() {
+		var id = $(this).val();
+		//alert(id);
+		$.ajax({
+			url: 'http://localhost:55537/Estados/Municipios/',
+			type: 'GET',
+			dataType: 'json',
+			data: {id:id},
+			success: function(result,status,xhr){
+				for (var i = 0; i < result.length; i++) {
+					insertarMunicipios(result[i]);
+				}
+			},
+			error: function(xhr,status,error){
+				alert('revisa tu coneccion');
+			}//error	
+		});//ajax
+	});//dom
+function insertarEstados(estados){
+		var nuevoOption = $('<option>').append(estados.nombre).val(estados.estadoID);
+		$('#SEstados').append(nuevoOption);
+	}
+function insertarMunicipios(municipios){
+		var nuevoOption2 = $('<option>').append(municipios.nombre);
+		$('#SMunicipios').append(nuevoOption2);
+	}
+	</script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>ejercisio 6</title>
+	<link rel="stylesheet" type="text/css" href="node_modules\bootstrap\dist\css\bootstrap.min.css">
+	<!--JQuery-->
+	<script type="text/javascript" src="node_modules\jquery\dist\jquery.min.js"></script>
+	<!--Bootstrap.js-->
+	<script type="text/javascript" src="node_modules\bootstrap\dist\js\bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container">
+	<div class="form-group">
+		<label for="PC">Computadoras</label>
+		<select name="PC" class="form-control" id="PCs"></select>
+	</div>
+</div>
+<div class="container" id="panel">
+  <h2>Panel Footer</h2>
+  <div class="panel panel-default">
+    <div class="panel-heading">
+    	<h3 id="nombre"></h3>
+    </div>
+    <div class="panel-body">
+    	<p><strong>Costo: </strong>$</p><p id="costo"></p>
+    	<p><strong>Memoria RAM:</strong></p><p id="ram"></p>
+    	<p><strong>Procesador:</strong></p><p id="procesador"></p>
+    	<p><strong>Disco duro: </strong></p><p id="discoDuro"></p>
+    	<p><strong>Dimensiones:</strong></p><p id="dimenciones"></p>
+    </div>
+  </div>
+</div>
+<script  type="text/javascript" >
+inicial();
+var numerosVeses= 0;
+$('#PCs').change(function(event) {
+	/* Act on the event */
+	var id= $(this).val();
+	//alert(id);
+	inicial(id);
+});
+function inicial (id) {
+	$.ajax({
+		url: 'http://localhost:55537/Computadoras',
+		type: 'GET',
+		dataType: 'json',
+		success: function(result,status,xhr){
+			if (numerosVeses == 0) {
+				for (var i = 0; i < result.length; i++) {
+				insertarSelect(result[i]);
+				}
+			}
+			else {
+				for (var i = 0; i < result.length; i++) {
+					if (id == result[i].modeloID) {
+						$('#costo').append(result[i].costo);
+						$('#ram').append(result[i].ram);
+						$('#procesador').append(result[i].procesador);
+						$('#discoDuro').append(result[i].discoDuro);
+						$('#dimenciones').append(result[i].dimenciones);
+						$('#nombre').append(result[i].nombre);
+					}//if
+				}//for
+			}//else
+			numerosVeses= numerosVeses+1;
+		},//succes
+		error: function(xhr,status,error){
+			alert('revisa tu coneccion');
+		}
+	});
+}
+	
+	
+	function insertarSelect(datos){
+		var nuevoOption = $('<option>').append(datos.nombre).val(datos.modeloID);
+		$('#PCs').append(nuevoOption);
+	}
+	
+
+</script>
+</body>
+</html>
